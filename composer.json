@@ -1,0 +1,38 @@
+{
+    "name": "zoorate/poinzilla",
+    "description": "PoinZilla Module for Magento 2",
+    "type": "magento2-module",
+    "version": "1.0.0-stable",
+    "license": [
+        "AFL-3.0"
+    ],
+    "authors": [
+        {
+            "name": "Zoorate",
+            "email": "support@feedaty.com"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Zoorate\\PoinZilla\\": ""
+        }
+    },
+    "require": {
+        "php": "~8.1.27",
+        "magento/magento-composer-installer": "*"
+    },
+    "suggest": {
+
+    },
+    "extra": {
+        "map": [
+            [
+                "*",
+                "Zoorate/PoinZilla"
+            ]
+        ]
+    }
+}

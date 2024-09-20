@@ -1,0 +1,73 @@
+<?php
+/** @var \Zoorate\PoinZilla\Block\Head $block */
+?>
+
+<?php
+if (!$block->getHelper()->getModuleEnable()) {
+    return false;
+}
+
+// if setting mode is true and user is not logged in or user is logged in but not a customer, return false
+if ($block->getHelper()->getSettingMode()) {
+
+    //if user is not logged in return false
+    if (!$block->isCustomerLoggedIn()) {
+        return false;
+    } else {
+        //get customer email
+        $poinzilla_user_data = $block->getCurrentCustomer();
+        //get setting mode customers email array
+        $setting_mode_customers = $block->getHelper()->getsSettingModeCustomers();
+        $setting_mode_customers = explode(',', $setting_mode_customers);
+
+        //if customer email is not in setting mode customers return false
+        if (!in_array($poinzilla_user_data->getEmail(), $setting_mode_customers)) {
+            return false;
+        }
+    }
+}
+?>
+
+<script>
+    (function() {
+        // Check if RequireJS is available and the script is not already defined
+        if (typeof requirejs !== 'undefined') {
+            var scriptSrc = '<?= $block->getOption('poinzilla_sdk_file_url') ?>?key=61bd97e543a91212c39267e424fda162&callback=callBackFunction&ver=1.3.0';
+            requirejs([scriptSrc], function() {
+            });
+        } else {
+            var s = document.createElement('script');
+            s.type = 'text/javascript';
+            s.async = false;
+            s.src = '<?= $block->getOption('poinzilla_sdk_file_url') ?>?key=61bd97e543a91212c39267e424fda162&callback=callBackFunction&ver=1.3.0';
+            var x = document.getElementsByTagName('script')[0];
+            x.parentNode.insertBefore(s, x);
+        }
+    })();
+</script>
+
+<div class="poinzilla-login-user-info"
+     data-merchant-code="<?= $block->getHelper()->getMerchantCode() ?>"
+     data-api-key="<?= $block->getHelper()->getPublicKey() ?>"
+     data-iframe-site-url="<?= $block->getOption('poinzilla_iframe_site_url') ?>"
+     data-api-url="<?= $block->getOption('poinzilla_api_url') ?>"
+    <?php if ($block->isCustomerLoggedIn()) { ?>
+        <?php $poinzilla_user_data = $block->getCurrentCustomer(); ?>
+        <?php $digest = $block->generateDigest($poinzilla_user_data->getEmail()); ?>
+        data-first-name="<?= $block->getCustomerFirstName() ?>"
+        data-last-name="<?= $block->getCustomerLastName() ?>"
+        data-email="<?= $poinzilla_user_data->getEmail(); ?>"
+        data-digest="<?= $digest ?>"
+    <?php } else { ?>
+        data-first-name=""
+        data-last-name=""
+        data-email=""
+        data-digest=""
+    <?php } ?>
+    <?php if ($block->getReferralCode()) { ?>
+        data-referral-code="<?= $block->getReferralCode() ?>"
+    <?php } ?>
+    <?php if ($block->getDefaultView()) { ?>
+        data-default-view="<?= $block->getDefaultView() ?>"
+    <?php } ?>>
+</div>
