@@ -2,7 +2,7 @@
     "name": "zoorate/poinzilla",
     "description": "PoinZilla Module for Magento 2",
     "type": "magento2-module",
-    "version": "1.0.0-stable",
+    "version": "1.0.1-stable",
     "license": [
         "AFL-3.0"
     ],
@@ -21,7 +21,6 @@
         }
     },
     "require": {
-        "php": "~8.1.27",
         "magento/magento-composer-installer": "*"
     },
     "suggest": {
