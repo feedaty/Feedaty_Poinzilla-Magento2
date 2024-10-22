@@ -49,7 +49,7 @@ class PoinZilla
 
     protected function getEndpoint()
     {
-        return 'https://api.poinzilla.com/';
+        return 'https://develop.pre-prod.poinzilla.com/be/';
     }
 
     protected function getExternalConsumerEndpoint(): string
