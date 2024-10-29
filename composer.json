@@ -22,16 +22,5 @@
     },
     "require": {
         "magento/magento-composer-installer": "*"
-    },
-    "suggest": {
-
-    },
-    "extra": {
-        "map": [
-            [
-                "*",
-                "Zoorate/PoinZilla"
-            ]
-        ]
     }
 }
