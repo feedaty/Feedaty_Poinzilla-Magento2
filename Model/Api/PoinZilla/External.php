@@ -27,6 +27,10 @@ class External extends PoinZilla
     }
 
 
+    /**
+     * @param $customer
+     * @return mixed
+     */
     public function createConsumer($customer)
     {
         $postData = json_encode([
@@ -35,7 +39,8 @@ class External extends PoinZilla
             "lastName"     => $customer->getLastName(),
             "merchantCode" => $this->helper->getMerchantCode(),
             "externalId"   => $customer->getId(),
-            "birthDate"    => null
+            "birthDate"    => null,
+            "groups" => [$customer->getGroupId()]
         ]);
 
         return $this->postRequest('externalConsumer', $postData);
