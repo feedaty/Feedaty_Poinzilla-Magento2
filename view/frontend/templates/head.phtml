@@ -54,13 +54,13 @@ if ($block->getHelper()->getSettingMode()) {
         <?php
         $poinzilla_user_data = $block->getCurrentCustomer();
         $digest = $block->generateDigest($poinzilla_user_data->getEmail());
-        $groups = json_encode([$poinzilla_user_data->getGroupId()]);
+        $group = json_encode([$poinzilla_user_data->getGroupId()]);
         ?>
         data-first-name="<?= $block->getCustomerFirstName() ?>"
         data-last-name="<?= $block->getCustomerLastName() ?>"
         data-email="<?= $poinzilla_user_data->getEmail(); ?>"
         data-digest="<?= $digest ?>"
-        data-consumer-group='<?= $groups ?>'
+        data-consumer-group='<?= $group ?>'
     <?php } else { ?>
         data-first-name=""
         data-last-name=""
