@@ -5,30 +5,37 @@ namespace Zoorate\PoinZilla\Model\Api;
 use Zoorate\PoinZilla\Helper\Data;
 use Magento\Framework\HTTP\Client\Curl as Client;
 use Psr\Log\LoggerInterface;
-use \Magento\Catalog\Model\ProductRepository;
+use Magento\Catalog\Model\ProductRepository;
 
 class PoinZilla
 {
     /**
      * @var Data
      */
-    protected $helper;
+    protected Data $helper;
 
     /**
      * @var Client
      */
-    protected $client;
+    protected Client $client;
 
     /**
      * @var LoggerInterface
      */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     /**
      * @var ProductRepository
      */
-    protected $productRepository;
+    protected ProductRepository $productRepository;
 
+    /**
+     * PoinZilla constructor.
+     * @param Data $helper
+     * @param Client $client
+     * @param LoggerInterface $logger
+     * @param ProductRepository $productRepository
+     */
     public function __construct(
         Data $helper,
         Client $client,
@@ -42,30 +49,46 @@ class PoinZilla
         $this->productRepository = $productRepository;
     }
 
-    private function getClient()
+    /**
+     * @return Client
+     */
+    private function getClient(): Client
     {
         return $this->client;
     }
 
-    protected function getEndpoint()
+    /**
+     * @return string
+     */
+    protected function getEndpoint(): string
     {
-        return 'https://develop.dev.poinzilla.com/be/';
+        return 'https://api.poinzilla.com/';
     }
 
+    /**
+     * @return string
+     */
     protected function getExternalConsumerEndpoint(): string
     {
         return $this->getEndpoint() . 'api/External/Consumer';
     }
 
+    /**
+     * @return string
+     */
     protected function getExternalOrderEndpoint(): string
     {
         return $this->getEndpoint() . 'api/External/Order';
     }
 
+    /**
+     * @param $cmd
+     * @param $data
+     * @return bool
+     */
     public function postRequest($cmd, $data): bool
     {
         $client = $this->getClient();
-
 
         if (in_array($cmd, ["externalConsumer", "externalOrder"])) {
             $requestUrl = ($cmd == "externalConsumer") ? $this->getExternalConsumerEndpoint() : $this->getExternalOrderEndpoint();
@@ -82,17 +105,18 @@ class PoinZilla
             } catch (\Exception $e) {
                 $this->logger->error('Zoorate PoinZilla : Error encountered during send order. ' . $e->getMessage());
             }
+
+            $body = $client->getBody();
+            $statusCode = $client->getStatus();
+            if($statusCode == 200) {
+                $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Pass');
+                return true;
+            } else {
+                $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Fail');
+            }
+
         }
 
-
-        $body = $client->getBody();
-        $statusCode = $client->getStatus();
-        if($statusCode == 200) {
-            $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Pass');
-            return true;
-        } else {
-            $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Fail');
-        }
 
         return false;
     }
