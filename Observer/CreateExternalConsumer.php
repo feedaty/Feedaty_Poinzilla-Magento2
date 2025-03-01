@@ -2,15 +2,24 @@
 
 namespace Zoorate\PoinZilla\Observer;
 
+use Magento\Framework\Event\Observer;
 use Zoorate\PoinZilla\Model\Api\PoinZilla\External;
 
+/**
+ * Class CreateExternalConsumer
+ * @package Zoorate\PoinZilla\Observer
+ */
 class CreateExternalConsumer implements \Magento\Framework\Event\ObserverInterface
 {
     /**
      * @var External
      */
-    protected $externalApi;
+    protected External $externalApi;
 
+    /**
+     * CreateExternalConsumer constructor.
+     * @param External $externalApi
+     */
     public function __construct(
         External $externalApi
     )
@@ -18,12 +27,15 @@ class CreateExternalConsumer implements \Magento\Framework\Event\ObserverInterfa
         $this->externalApi = $externalApi;
     }
 
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    /**
+     * @param Observer $observer
+     */
+    public function execute(Observer $observer)
     {
         if ($this->externalApi->getModuleEnable()) {
             $customer = $observer->getData('customer');
 
-            if($this->externalApi->getSettingMode()) {
+            if ($this->externalApi->getSettingMode()) {
                 $customerEmail = $customer->getEmail();
 
                 $setting_mode_customers = $this->externalApi->getSettingModeCustomers();
@@ -31,11 +43,9 @@ class CreateExternalConsumer implements \Magento\Framework\Event\ObserverInterfa
                 if (in_array($customerEmail, $setting_mode_customers)) {
                     $this->externalApi->createConsumer($customer);
                 }
-            }
-            else {
+            } else {
                 $this->externalApi->createConsumer($customer);
             }
-
         }
     }
 }
