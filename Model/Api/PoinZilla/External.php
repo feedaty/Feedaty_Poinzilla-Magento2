@@ -4,12 +4,18 @@ namespace Zoorate\PoinZilla\Model\Api\PoinZilla;
 
 use Magento\SalesRule\Api\CouponRepositoryInterface;
 use Zoorate\PoinZilla\Model\Api\PoinZilla;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\ScopeInterface;
+
 
 class External extends PoinZilla
 {
     protected CouponRepositoryInterface $couponRepository;
     private $couponCollectionFactory;
     private $categoryRepository;
+    protected $storeManager;
+    protected $scopeConfig;
 
     public function __construct(
         \Zoorate\PoinZilla\Helper\Data $helper,
@@ -18,28 +24,61 @@ class External extends PoinZilla
         \Magento\Catalog\Model\ProductRepository $productRepository,
         CouponRepositoryInterface $couponRepository,
         \Magento\SalesRule\Model\ResourceModel\Coupon\CollectionFactory $couponCollectionFactory,
-        \Magento\Catalog\Model\CategoryRepository $categoryRepository
+        \Magento\Catalog\Model\CategoryRepository $categoryRepository,
+        StoreManagerInterface $storeManager,
+        ScopeConfigInterface $scopeConfig
     ) {
         $this->couponRepository = $couponRepository;
         $this->couponCollectionFactory = $couponCollectionFactory;
         $this->categoryRepository = $categoryRepository;
+        $this->storeManager = $storeManager;
+        $this->scopeConfig = $scopeConfig;
         parent::__construct($helper, $client, $logger, $productRepository);
     }
 
 
+    /**
+     * @param $customer
+     * @return mixed
+     */
     public function createConsumer($customer)
     {
+        // Ottieni l'ID del negozio associato al cliente
+        $storeId = $customer->getStoreId();
+        $store = $this->storeManager->getStore($storeId);
+
+        // Ottieni la lingua del negozio
+        $localeCode = $this->scopeConfig->getValue(
+            'general/locale/code',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        // Mappatura per ottenere solo valori accettati
+        $acceptedCultures = ['it', 'en', 'es', 'fr', 'de'];
+
+        // Estrai la parte della lingua prima del "_"
+        $culture = substr($localeCode, 0, 2);
+
+        // Verifica che sia un valore accettato, altrimenti imposta un default
+        if (!in_array($culture, $acceptedCultures)) {
+            $culture = 'en'; // Default a "en" se il valore non è tra quelli validi
+        }
+
         $postData = json_encode([
             "email"        => $customer->getEmail(),
             "firstName"    => $customer->getFirstName(),
             "lastName"     => $customer->getLastName(),
             "merchantCode" => $this->helper->getMerchantCode(),
             "externalId"   => $customer->getId(),
-            "birthDate"    => null
+            "birthDate"    => null,
+            "cultureId"      => $culture, // Lingua validata
+            "group" => [$customer->getGroupId()]
         ]);
 
         return $this->postRequest('externalConsumer', $postData);
     }
+
 
     /**
      * @param $order

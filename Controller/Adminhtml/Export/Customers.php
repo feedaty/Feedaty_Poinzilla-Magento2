@@ -31,8 +31,8 @@ class Customers extends Action
     private function getCsvFileContent()
     {
         $output = '';
-        $headers = ['firstName', 'lastName', 'email', 'externalID', 'birthDay', 'points'];
-        $output .= implode(',', $headers) . "\n";
+        $headers = ['firstName', 'lastName', 'email', 'externalID', 'points', 'group'];
+        $output .= implode(';', $headers) . "\n";
 
         $customerCollection = $this->customerCollectionFactory->create();
 
@@ -41,10 +41,10 @@ class Customers extends Action
             $lastName = $customer->getLastname() ?: 'default';
             $email = $customer->getEmail();
             $externalID = $customer->getId();
-            $birthDay = ''; // always empty
-            $points = 500; // always 500
+            $points = 0;
+            $group = $customer->getGroupId();
 
-            $output .= implode(',', [$firstName, $lastName, $email, $externalID, $birthDay, $points]) . "\n";
+            $output .= implode(';', [$firstName, $lastName, $email, $externalID, $points, $group]) . "\n";
         }
 
         return $output;

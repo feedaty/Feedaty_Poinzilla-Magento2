@@ -49,7 +49,7 @@ class PoinZilla
 
     protected function getEndpoint()
     {
-        return 'https://api.poinzilla.com/';
+        return 'https://develop.dev.poinzilla.com/be/';
     }
 
     protected function getExternalConsumerEndpoint(): string
@@ -67,23 +67,23 @@ class PoinZilla
         $client = $this->getClient();
 
 
-        if ($cmd == "externalConsumer") {
-            $requestUrl = $this->getExternalConsumerEndpoint();
+        if (in_array($cmd, ["externalConsumer", "externalOrder"])) {
+            $requestUrl = ($cmd == "externalConsumer") ? $this->getExternalConsumerEndpoint() : $this->getExternalOrderEndpoint();
+
             $client->addHeader('Content-Type', 'application/json');
-            $client->addHeader('X-loyalty-channel-key', $this->helper->getPublicKey());
-            $client->post($requestUrl, $data);
-        }
-        elseif ($cmd == "externalOrder") {
-            $requestUrl = $this->getExternalOrderEndpoint();
-            $this->logger->info('Zoorate PoinZilla : Send Order to PoinZilla' . $requestUrl);
-            $client->addHeader('Content-Type', 'application/json');
-            $client->addHeader('X-loyalty-channel-key', $this->helper->getPublicKey());
+            $client->addHeader('X-loyalty-channel-key', $this->helper->getPrivateKey());
+
+            if ($cmd == "externalOrder") {
+                $this->logger->info('Zoorate PoinZilla : Send Order to PoinZilla ' . $requestUrl);
+            }
+
             try {
                 $client->post($requestUrl, $data);
             } catch (\Exception $e) {
                 $this->logger->error('Zoorate PoinZilla : Error encountered during send order. ' . $e->getMessage());
             }
         }
+
 
         $body = $client->getBody();
         $statusCode = $client->getStatus();
