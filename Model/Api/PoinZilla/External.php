@@ -45,8 +45,6 @@ class External extends PoinZilla
     {
         // Ottieni l'ID del negozio associato al cliente
         $storeId = $customer->getStoreId();
-        $store = $this->storeManager->getStore($storeId);
-
         // Ottieni la lingua del negozio
         $localeCode = $this->scopeConfig->getValue(
             'general/locale/code',

@@ -3,7 +3,7 @@
     <event name="sales_order_save_after">
         <observer name="poinzilla_SalesOrderSaveAfter" instance="Zoorate\PoinZilla\Observer\SalesOrderSaveAfter" />
     </event>
-    <event name="adminhtml_customer_prepare_save">
+    <event name="adminhtml_customer_save_after">
         <observer name="poinzilla_export_customer" instance="Zoorate\PoinZilla\Observer\CreateExternalConsumer" />
     </event>
 </config>
