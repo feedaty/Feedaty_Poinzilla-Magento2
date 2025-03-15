@@ -40,7 +40,7 @@ class Customers extends Action
     private function getCsvFileContent()
     {
         $output = '';
-        $headers = ['firstName', 'lastName', 'email', 'externalID', 'points', 'group', 'culture']; // ✅ Aggiunto il campo 'culture'
+        $headers = ['firstName', 'lastName', 'email', 'externalID', 'points', 'group', 'culture']; //  Aggiunto il campo 'culture'
         $output .= implode(';', $headers) . "\n";
 
         $customerCollection = $this->customerCollectionFactory->create();
@@ -53,7 +53,7 @@ class Customers extends Action
             $points = 0;
             $group = $customer->getGroupId();
 
-            // ✅ Ottenere la cultura del cliente basata sul negozio
+            //  Ottenere la cultura del cliente basata sul negozio
             $storeId = $customer->getStoreId();
             $localeCode = $this->scopeConfig->getValue(
                 'general/locale/code',
@@ -61,18 +61,18 @@ class Customers extends Action
                 $storeId
             );
 
-            // ✅ Lista delle lingue accettate
+            //  Lista delle lingue accettate
             $acceptedCultures = ['it', 'en', 'es', 'fr', 'de'];
 
-            // ✅ Estrarre la parte della lingua prima del "_"
+            //  Estrarre la parte della lingua prima del "_"
             $culture = substr($localeCode, 0, 2);
 
-            // ✅ Se la lingua non è accettata, impostare il default "en"
+            //  Se la lingua non è accettata, impostare il default "en"
             if (!in_array($culture, $acceptedCultures)) {
                 $culture = 'en';
             }
 
-            // ✅ Aggiungere il valore della cultura al CSV
+            //  Aggiungere il valore della cultura al CSV
             $output .= implode(';', [$firstName, $lastName, $email, $externalID, $points, $group, $culture]) . "\n";
         }
 

@@ -8,10 +8,10 @@ use Zoorate\PoinZilla\Helper\Data;
 class Head extends \Magento\Framework\View\Element\Template
 {
     private $options = [
-        'poinzilla_sdk_file_url' => 'https://sdk.poinzilla.com/sdk.umd.js',
+        'poinzilla_sdk_file_url' => 'https://develop.dev.poinzilla.com/sdk/sdk.umd.js',
         'poinzilla_sdk_css_url' => '',
-        'poinzilla_iframe_site_url' => 'https://widget.poinzilla.com',
-        'poinzilla_api_url' => 'https://api.poinzilla.com'
+        'poinzilla_iframe_site_url' => 'https://develop.dev.poinzilla.com/widget/',
+        'poinzilla_api_url' => 'https://develop.dev.poinzilla.com/be/'
     ];
 
     /**
