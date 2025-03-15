@@ -40,6 +40,7 @@
                 <label>Export Customers</label>
                 <field id="export_customers_csv" translate="label" type="button" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Export Customers to CSV</label>
+                    <comment>Export customers to import them into the Poinzilla panel</comment>
                     <frontend_model>Zoorate\PoinZilla\Block\Adminhtml\System\Config\ExportButton</frontend_model>
                 </field>
             </group>
