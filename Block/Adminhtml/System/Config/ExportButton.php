@@ -28,7 +28,13 @@ class ExportButton extends \Magento\Config\Block\System\Config\Form\Field
 
     public function getAjaxUrl()
     {
-        return $this->urlBuilder->getUrl('poinzilla/export/customers');
+        $websiteId = $this->getRequest()->getParam('website');
+        $storeId = $this->getRequest()->getParam('store');
+
+        return $this->urlBuilder->getUrl('poinzilla/export/customers', [
+            'website' => $websiteId,
+            'store' => $storeId
+        ]);
     }
 
     public function getButtonHtml()

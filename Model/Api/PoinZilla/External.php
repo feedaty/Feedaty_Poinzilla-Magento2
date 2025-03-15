@@ -43,7 +43,6 @@ class External extends PoinZilla
      */
     private CategoryRepository $categoryRepository;
 
-
     /**
      * External constructor.
      * @param Data $helper
@@ -59,6 +58,7 @@ class External extends PoinZilla
     public function __construct(
         Data                      $helper,
         Curl                      $client,
+        LoggerInterface             $logger,
         ProductRepository         $productRepository,
         CouponRepositoryInterface $couponRepository,
         CollectionFactory         $couponCollectionFactory,
@@ -72,7 +72,7 @@ class External extends PoinZilla
         $this->categoryRepository = $categoryRepository;
         $this->storeManager = $storeManager;
         $this->scopeConfig = $scopeConfig;
-        parent::__construct($helper, $client, $productRepository);
+        parent::__construct($helper, $client, $logger,  $productRepository);
     }
 
 
