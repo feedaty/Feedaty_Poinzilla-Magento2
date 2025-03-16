@@ -32,19 +32,26 @@ class CreateExternalConsumer implements \Magento\Framework\Event\ObserverInterfa
      */
     public function execute(Observer $observer)
     {
-        if ($this->externalApi->getModuleEnable()) {
-            $customer = $observer->getData('customer');
+        $customer = $observer->getData('customer');
 
-            if ($this->externalApi->getSettingMode()) {
+        // ✅ Ottenere lo store ID associato al cliente
+        $storeId = $customer->getStoreId();
+
+        if ($this->externalApi->getModuleEnable($storeId)) {
+
+            if ($this->externalApi->getSettingMode($storeId)) {
                 $customerEmail = $customer->getEmail();
 
-                $setting_mode_customers = $this->externalApi->getSettingModeCustomers();
+                // ✅ Passare lo store ID per ottenere la configurazione corretta
+                $setting_mode_customers = $this->externalApi->getSettingModeCustomers($storeId);
                 $setting_mode_customers = explode(',', $setting_mode_customers);
+
                 if (in_array($customerEmail, $setting_mode_customers)) {
-                    $this->externalApi->createConsumer($customer);
+                    $this->externalApi->createConsumer($customer, $storeId);
                 }
             } else {
-                $this->externalApi->createConsumer($customer);
+                // ✅ Passare lo store ID per assicurarsi che il consumatore sia creato con la giusta configurazione
+                $this->externalApi->createConsumer($customer, $storeId);
             }
         }
     }

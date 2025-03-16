@@ -12,6 +12,8 @@ interface ZoorateApiLogInterface
     const CALL_RESPONSE = 'call_response';
     const CREATED_AT = 'created_at';
 
+    const STORE_ID = 'store_id';
+
     /**
      * Get id
      * @return string|null
@@ -102,4 +104,18 @@ interface ZoorateApiLogInterface
      * @return \Zoorate\PoinZilla\Api\Data\ZoorateApiLog
      */
     public function setCreatedAt($createdAt);
+
+    /**
+     * Get store_id
+     * @return string|null
+     */
+    public function getStoreId();
+
+    /**
+     * Set store_id
+     * @param string $storeId
+     * @return \Zoorate\PoinZilla\Api\Data\ZoorateApiLog
+     */
+    public function setStoreId($storeId);
+
 }

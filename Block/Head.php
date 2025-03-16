@@ -4,6 +4,7 @@ namespace Zoorate\PoinZilla\Block;
 
 use Magento\Customer\Model\SessionFactory;
 use Zoorate\PoinZilla\Helper\Data;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Head extends \Magento\Framework\View\Element\Template
 {
@@ -23,6 +24,8 @@ class Head extends \Magento\Framework\View\Element\Template
 
     protected $helper;
 
+    protected $storeManager;
+
     /**
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param SessionFactory $sessionFactory
@@ -32,12 +35,14 @@ class Head extends \Magento\Framework\View\Element\Template
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         SessionFactory $sessionFactory,
+        StoreManagerInterface $storeManager,
         Data $helper,
         array $data = []
     ) {
-        parent::__construct($context, $data);
+        $this->storeManager = $storeManager;
         $this->sessionFactory = $sessionFactory;
         $this->helper = $helper;
+        parent::__construct($context, $data);
     }
 
     public function getOption($key)
@@ -77,12 +82,12 @@ class Head extends \Magento\Framework\View\Element\Template
      * @param $user_email
      * @return string
      */
-    public function generateDigest($user_email): string
+    public function generateDigest($user_email, $storeId = null): string
     {
         return hash_hmac(
             'sha256',
-            $this->helper->getMerchantCode() . $user_email,
-            $this->helper->getPrivateKey()
+            $this->helper->getMerchantCode($storeId) . $user_email,
+            $this->helper->getPrivateKey($storeId)
         );
     }
 
@@ -104,5 +109,13 @@ class Head extends \Magento\Framework\View\Element\Template
     public function getDefaultView()
     {
         return $this->_request->getParam('default_view');
+    }
+
+    /**
+     * Restituisce lo store ID corrente
+     */
+    public function getCurrentStoreId()
+    {
+        return $this->storeManager->getStore()->getId();
     }
 }

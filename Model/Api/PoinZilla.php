@@ -94,7 +94,27 @@ class PoinZilla
             $requestUrl = ($cmd == "externalConsumer") ? $this->getExternalConsumerEndpoint() : $this->getExternalOrderEndpoint();
 
             $client->addHeader('Content-Type', 'application/json');
-            $client->addHeader('X-loyalty-channel-key', $this->helper->getPrivateKey());
+
+            // ✅ Ottenere l'ID della store view dall'oggetto ordine
+            if (isset($data['order_id'])) {
+                $order = $this->getOrderById($data['order_id']);
+                if ($order) {
+                    $storeId = $order->getStoreId();
+                }
+            }
+
+            // ✅ Se non è disponibile l'ordine, prendi lo store ID predefinito
+            if (!isset($storeId)) {
+                $storeId = $this->storeManager->getStore()->getId();
+            }
+
+            // ✅ Recupera la chiave privata per la specifica store view
+            $privateKey = $this->helper->getPrivateKey($storeId);
+
+            // ✅ Debug per verificare la store view
+            $this->logger->info("Culture for customer - Store ID: " . $storeId . " - Private Key: " . $privateKey);
+
+            $client->addHeader('X-loyalty-channel-key', $privateKey);
 
             if ($cmd == "externalOrder") {
                 $this->logger->info('Zoorate PoinZilla : Send Order to PoinZilla ' . $requestUrl);
@@ -108,32 +128,31 @@ class PoinZilla
 
             $body = $client->getBody();
             $statusCode = $client->getStatus();
-            if($statusCode == 200) {
-                $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Pass');
+            if ($statusCode == 200) {
+                $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Pass', $storeId);
                 return true;
             } else {
-                $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Fail');
+                $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Fail', $storeId);
             }
-
         }
-
 
         return false;
     }
 
-    public function getModuleEnable()
+
+    public function getModuleEnable($storeId = null)
     {
-        return $this->helper->getModuleEnable();
+        return $this->helper->getModuleEnable($storeId);
     }
 
-    public function getSettingMode()
+    public function getSettingMode($storeId = null)
     {
-        return $this->helper->getSettingMode();
+        return $this->helper->getSettingMode($storeId);
     }
 
-    public function getSettingModeCustomers()
+    public function getSettingModeCustomers($storeId = null)
     {
-        return $this->helper->getsSettingModeCustomers();
+        return $this->helper->getsSettingModeCustomers($storeId);
     }
 
 }
