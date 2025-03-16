@@ -2,6 +2,7 @@
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
     <table name="zoorate_api_log" resource="default" engine="innodb" comment="">
         <column xsi:type="int" name="id" padding="11" unsigned="false" nullable="false" identity="true" comment=""/>
+        <column xsi:type="int" name="store_id" unsigned="false" nullable="false" comment=""/>
         <column xsi:type="varchar" name="call_name" length="50" comment=""/>
         <column xsi:type="varchar" name="call_endpoint" length="100" comment=""/>
         <column xsi:type="text" name="call_body" comment=""/>

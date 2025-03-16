@@ -28,14 +28,31 @@ class ExportButton extends \Magento\Config\Block\System\Config\Form\Field
 
     public function getAjaxUrl()
     {
-        return $this->urlBuilder->getUrl('poinzilla/export/customers');
+        $websiteId = $this->getRequest()->getParam('website');
+        $storeId = $this->getRequest()->getParam('store');
+
+        return $this->urlBuilder->getUrl('poinzilla/export/customers', [
+            'website' => $websiteId,
+            'store' => $storeId
+        ]);
     }
 
     public function getButtonHtml()
     {
+        $websiteId = $this->getRequest()->getParam('website');
+        $storeId = $this->getRequest()->getParam('store');
+
+        // Creazione di un'etichetta più leggibile
+        $scopeLabel = '';
+        if ($storeId) {
+            $scopeLabel = __('for Store View ID %1', $storeId);
+        } elseif ($websiteId) {
+            $scopeLabel = __('for Website ID %1', $websiteId);
+        }
+
         return $this->getLayout()->createBlock('Magento\Backend\Block\Widget\Button')
             ->setType('button')
-            ->setLabel(__('Export Customers'))
+            ->setLabel(__('Export Customers') . ' ' . $scopeLabel)
             ->setOnClick("setLocation('" . $this->getAjaxUrl() . "')")
             ->toHtml();
     }

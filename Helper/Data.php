@@ -55,36 +55,36 @@ class Data extends AbstractHelper
         return $this->getConfigValue(self::XML_PATH_POINZILLA . 'general/' . $code, $storeId);
     }
 
-    public function getModuleEnable()
+    public function getModuleEnable($storeId = null)
     {
-        return $this->getGeneralConfig('enable');
+        return $this->getGeneralConfig('enable', $storeId);
     }
 
-    public function getSettingMode()
+    public function getSettingMode($storeId = null)
     {
-        return $this->getGeneralConfig('setting_mode');
+        return $this->getGeneralConfig('setting_mode', $storeId);
     }
 
-    public function getsSettingModeCustomers()
+    public function getsSettingModeCustomers($storeId = null)
     {
-        return $this->getGeneralConfig('setting_mode_customers');
+        return $this->getGeneralConfig('setting_mode_customers', $storeId);
     }
 
-    public function getMerchantCode()
+    public function getMerchantCode($storeId = null)
     {
-        return $this->getGeneralConfig('merchant_code');
+        return $this->getGeneralConfig('merchant_code', $storeId);
     }
 
-    public function getPublicKey()
+    public function getPublicKey($storeId = null)
     {
-        return $this->getGeneralConfig('public_key');
+        return $this->getGeneralConfig('public_key', $storeId);
     }
 
-    public function getPrivateKey()
+    public function getPrivateKey($storeId = null)
     {
-        return $this->getGeneralConfig('private_key');
+        return $this->getGeneralConfig('private_key', $storeId);
     }
-    public function apiLog($name, $endpoint, $body, $response, $result)
+    public function apiLog($name, $endpoint, $body, $response, $result, $storeId = null)
     {
         $apiLogData = $this->zoorateApiLogInterfaceFactory->create();
         $apiLogData->setCallName($name);
@@ -93,6 +93,7 @@ class Data extends AbstractHelper
         $response = json_decode((string)$response, true);
         $apiLogData->setCallResponse(json_encode($response));
         $apiLogData->setCallResult($result);
+        $apiLogData->setStoreId($storeId);
 
         $this->zoorateApiLogRepository->save($apiLogData);
     }

@@ -126,4 +126,14 @@ class ZoorateApiLog extends AbstractModel implements ZoorateApiLogInterface
     {
         return $this->setData(self::CREATED_AT, $createdAt);
     }
+
+    public function getStoreId()
+    {
+        return $this->getData(self::STORE_ID);
+    }
+
+    public function setStoreId($storeId)
+    {
+        return $this->setData(self::STORE_ID, $storeId);
+    }
 }
