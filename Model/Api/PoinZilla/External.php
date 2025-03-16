@@ -122,7 +122,7 @@ class External extends PoinZilla
      * @param $order
      * @return bool
      */
-    public function createOrder($order): bool
+    public function createOrder($order, $storeId = null): bool
     {
         $postData = json_encode([
             "id" => $order->getId(),
@@ -131,7 +131,7 @@ class External extends PoinZilla
             "line_items" => $this->getOrderItems($order),
             "coupon_lines" => $this->getCouponLines($order)
         ]);
-        return $this->postRequest('externalOrder', $postData);
+        return $this->postRequest('externalOrder', $postData, $storeId);
     }
 
     /**

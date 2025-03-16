@@ -86,7 +86,7 @@ class PoinZilla
      * @param $data
      * @return bool
      */
-    public function postRequest($cmd, $data): bool
+    public function postRequest($cmd, $data, $storeId): bool
     {
         $client = $this->getClient();
 
@@ -94,19 +94,6 @@ class PoinZilla
             $requestUrl = ($cmd == "externalConsumer") ? $this->getExternalConsumerEndpoint() : $this->getExternalOrderEndpoint();
 
             $client->addHeader('Content-Type', 'application/json');
-
-            // ✅ Ottenere l'ID della store view dall'oggetto ordine
-            if (isset($data['order_id'])) {
-                $order = $this->getOrderById($data['order_id']);
-                if ($order) {
-                    $storeId = $order->getStoreId();
-                }
-            }
-
-            // ✅ Se non è disponibile l'ordine, prendi lo store ID predefinito
-            if (!isset($storeId)) {
-                $storeId = $this->storeManager->getStore()->getId();
-            }
 
             // ✅ Recupera la chiave privata per la specifica store view
             $privateKey = $this->helper->getPrivateKey($storeId);

@@ -4,6 +4,8 @@ namespace Zoorate\PoinZilla\Observer;
 
 use Psr\Log\LoggerInterface;
 use Zoorate\PoinZilla\Model\Api\PoinZilla\External;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
 
 class SalesOrderSaveAfter implements \Magento\Framework\Event\ObserverInterface
 {
@@ -29,28 +31,35 @@ class SalesOrderSaveAfter implements \Magento\Framework\Event\ObserverInterface
         $this->externalApi = $externalApi;
     }
 
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer)
     {
-        if ($this->externalApi->getModuleEnable()) {
-            $this->logger->info('Zoorate PoinZilla : Start SalesOrderSaveAfter');
-            $order = $observer->getEvent()->getOrder();
-            if ($order instanceof \Magento\Framework\Model\AbstractModel) {
+        $order = $observer->getEvent()->getOrder();
+
+        if ($order instanceof \Magento\Framework\Model\AbstractModel) {
+            // ✅ Ottenere lo Store ID dell'ordine
+            $storeId = $order->getStoreId();
+
+            if ($this->externalApi->getModuleEnable($storeId)) {
+
                 $oldStatus = $order->getOrigData('status');
                 $newStatus = $order->getStatus();
-                if($this->externalApi->getSettingMode()) {
+
+                if ($this->externalApi->getSettingMode($storeId)) {
                     $customerEmail = $order->getCustomerEmail();
-                    $this->logger->info('Zoorate PoinZilla : Setting Mode is enable');
-                    $setting_mode_customers = $this->externalApi->getSettingModeCustomers();
+
+                    $setting_mode_customers = $this->externalApi->getSettingModeCustomers($storeId);
                     $setting_mode_customers = explode(',', $setting_mode_customers);
+
                     if (in_array($customerEmail, $setting_mode_customers)) {
                         if ($oldStatus != $newStatus) {
-                            $this->externalApi->createOrder($order);
+                            // ✅ Passiamo lo Store ID a `createOrder()`
+                            $this->externalApi->createOrder($order, $storeId);
                         }
                     }
-                }
-                else {
+                } else {
                     if ($oldStatus != $newStatus) {
-                        $this->externalApi->createOrder($order);
+                        // ✅ Passiamo lo Store ID a `createOrder()`
+                        $this->externalApi->createOrder($order, $storeId);
                     }
                 }
             }
