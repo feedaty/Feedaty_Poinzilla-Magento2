@@ -114,7 +114,7 @@ class External extends PoinZilla
             "group" => [$customer->getGroupId()]
         ]);
 
-        return $this->postRequest('externalConsumer', $postData);
+        return $this->postRequest('externalConsumer', $postData, $storeId);
     }
 
 
