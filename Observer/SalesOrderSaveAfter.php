@@ -40,8 +40,7 @@ class SalesOrderSaveAfter implements \Magento\Framework\Event\ObserverInterface
                 if($this->externalApi->getSettingMode()) {
                     $customerEmail = $order->getCustomerEmail();
                     $this->logger->info('Zoorate PoinZilla : Setting Mode is enable');
-                    $setting_mode_customers = $this->externalApi->getSettingModeCustomers();
-                    $setting_mode_customers = explode(',', $setting_mode_customers);
+                    $setting_mode_customers = explode(',', $this->externalApi->getSettingModeCustomers() ?? '');
                     if (in_array($customerEmail, $setting_mode_customers)) {
                         if ($oldStatus != $newStatus) {
                             $this->externalApi->createOrder($order);
