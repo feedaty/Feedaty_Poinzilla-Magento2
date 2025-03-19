@@ -17,8 +17,7 @@ if ($block->getHelper()->getSettingMode()) {
         //get customer email
         $poinzilla_user_data = $block->getCurrentCustomer();
         //get setting mode customers email array
-        $setting_mode_customers = $block->getHelper()->getsSettingModeCustomers();
-        $setting_mode_customers = explode(',', $setting_mode_customers);
+        $setting_mode_customers = explode(',', $block->getHelper()->getsSettingModeCustomers() ?? '');
 
         //if customer email is not in setting mode customers return false
         if (!in_array($poinzilla_user_data->getEmail(), $setting_mode_customers)) {
