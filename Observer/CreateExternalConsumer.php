@@ -43,8 +43,7 @@ class CreateExternalConsumer implements \Magento\Framework\Event\ObserverInterfa
                 $customerEmail = $customer->getEmail();
 
                 // ✅ Passare lo store ID per ottenere la configurazione corretta
-                $setting_mode_customers = $this->externalApi->getSettingModeCustomers($storeId);
-                $setting_mode_customers = explode(',', $setting_mode_customers);
+                $setting_mode_customers = explode(',', $this->externalApi->getSettingModeCustomers($storeId) ?? '');
 
                 if (in_array($customerEmail, $setting_mode_customers)) {
                     $this->externalApi->createConsumer($customer, $storeId);

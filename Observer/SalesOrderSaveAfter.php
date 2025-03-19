@@ -47,8 +47,7 @@ class SalesOrderSaveAfter implements \Magento\Framework\Event\ObserverInterface
                 if ($this->externalApi->getSettingMode($storeId)) {
                     $customerEmail = $order->getCustomerEmail();
 
-                    $setting_mode_customers = $this->externalApi->getSettingModeCustomers($storeId);
-                    $setting_mode_customers = explode(',', $setting_mode_customers);
+                    $setting_mode_customers = explode(',', $this->externalApi->getSettingModeCustomers($storeId) ?? '');
 
                     if (in_array($customerEmail, $setting_mode_customers)) {
                         if ($oldStatus != $newStatus) {
