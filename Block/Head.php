@@ -8,12 +8,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Head extends \Magento\Framework\View\Element\Template
 {
-    private $options = [
-        'poinzilla_sdk_file_url' => 'https://sdk.poinzilla.com/sdk.umd.js',
-        'poinzilla_sdk_css_url' => '',
-        'poinzilla_iframe_site_url' => 'https://widget.poinzilla.com',
-        'poinzilla_api_url' => 'https://api.poinzilla.com'
-    ];
+    private $options = [];
 
     /**
      * @var \Magento\Customer\Model\Session
@@ -42,8 +37,17 @@ class Head extends \Magento\Framework\View\Element\Template
         $this->storeManager = $storeManager;
         $this->sessionFactory = $sessionFactory;
         $this->helper = $helper;
+
+        // Popoliamo dinamicamente le options
+        $this->options = [
+            'poinzilla_sdk_file_url'     => $this->helper->getSdkFileUrl(),
+            'poinzilla_iframe_site_url'  => $this->helper->getIframeUrl(),
+            'poinzilla_api_url'          => $this->helper->getApiUrl()
+        ];
+
         parent::__construct($context, $data);
     }
+
 
     public function getOption($key)
     {

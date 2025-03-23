@@ -84,6 +84,22 @@ class Data extends AbstractHelper
     {
         return $this->getGeneralConfig('private_key', $storeId);
     }
+
+    public function getSdkFileUrl()
+    {
+        return $this->scopeConfig->getValue('zoorate_poinzilla/sdk/file_url', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getIframeUrl()
+    {
+        return $this->scopeConfig->getValue('zoorate_poinzilla/sdk/iframe_url', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getApiUrl()
+    {
+        return $this->scopeConfig->getValue('zoorate_poinzilla/sdk/api_url', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
     public function apiLog($name, $endpoint, $body, $response, $result, $storeId = null)
     {
         $apiLogData = $this->zoorateApiLogInterfaceFactory->create();
