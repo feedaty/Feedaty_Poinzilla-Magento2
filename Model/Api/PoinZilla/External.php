@@ -44,7 +44,6 @@ class External extends PoinZilla
     private CategoryRepository $categoryRepository;
 
     /**
-     * External constructor.
      * @param Data $helper
      * @param Curl $client
      * @param LoggerInterface $logger
@@ -154,7 +153,7 @@ class External extends PoinZilla
 
             if ($item->getRowTotalInclTax()) {
                 $products[] = [
-                    'id' => $item->getProductId(),
+                    'id' => $product->getSku(),
                     'product_id' => $item->getProductId(),
                     'productCat' => $allCategoryIds,
                     'name' => $item->getName(),

@@ -55,6 +55,9 @@ class SalesOrderSaveAfter implements \Magento\Framework\Event\ObserverInterface
                             $this->externalApi->createOrder($order, $storeId);
                         }
                     }
+                    else {
+                        $this->logger->warning('PoinZilla : Customer not in setting mode');
+                    }
                 } else {
                     if ($oldStatus != $newStatus) {
                         // ✅ Passiamo lo Store ID a `createOrder()`
