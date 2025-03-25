@@ -153,8 +153,8 @@ class External extends PoinZilla
 
             if ($item->getRowTotalInclTax()) {
                 $products[] = [
-                    'id' => $product->getSku(),
-                    'product_id' => $item->getProductId(),
+                    'id' => $item->getProductId(),
+                    'product_id' => $product->getSku(),
                     'productCat' => $allCategoryIds,
                     'name' => $item->getName(),
                     'total' => $item->getRowTotalInclTax()

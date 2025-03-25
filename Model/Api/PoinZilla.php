@@ -62,7 +62,7 @@ class PoinZilla
      */
     protected function getEndpoint(): string
     {
-        return 'https://api.poinzilla.com/';
+        return $this->helper->getApiUrl();
     }
 
     /**
