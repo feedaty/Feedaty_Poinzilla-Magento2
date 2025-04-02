@@ -8,27 +8,27 @@
             <label>PoinZilla</label>
             <tab>zoorate</tab>
             <resource>Zoorate_PoinZilla::configuration</resource>
-            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>General Settings</label>
-                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Module</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="merchant_code" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="merchant_code" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Merchant code</label>
                 </field>
-                <field id="public_key" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="public_key" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Public key</label>
                 </field>
-                <field id="private_key" translate="label" type="password" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="private_key" translate="label" type="password" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Private key</label>
                 </field>
-                <field id="setting_mode" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="setting_mode" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Setting Mode</label>
                     <comment>Enable setting mode to enable the module only for customers indicated in the following field</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="setting_mode_customers" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="setting_mode_customers" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <comment>Insert the email addresses of the customers you want to enable the module for, separated by a comma</comment>
                     <label>Customer email list</label>
                     <depends>
@@ -36,10 +36,11 @@
                     </depends>
                 </field>
             </group>
-            <group id="export_customers" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+            <group id="export_customers" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Export Customers</label>
-                <field id="export_customers_csv" translate="label" type="button" sortOrder="100" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="export_customers_csv" translate="label" type="button" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Export Customers to CSV</label>
+                    <comment>Export customers to import them into the Poinzilla panel</comment>
                     <frontend_model>Zoorate\PoinZilla\Block\Adminhtml\System\Config\ExportButton</frontend_model>
                 </field>
             </group>

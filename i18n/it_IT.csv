@@ -10,3 +10,6 @@
 "Export Customers to CSV","Esporta Clienti in CSV"
 "Enable setting mode to enable the module only for customers indicated in the following field","Abilita la modalità test per abilitare il modulo solo per i clienti indicati nel campo seguente"
 "Insert the email addresses of the customers you want to enable the module for, separated by a comma","Inserisci gli indirizzi email dei clienti per i quali vuoi abilitare il modulo, separati da una virgola"
+"for Store View ID %1"," per Store View con ID %1"
+"for Website ID %1","per Website con ID %1"
+"Export customers to import them into the Poinzilla panel","Esporta i clienti per importarli nel pannello Poinzilla"

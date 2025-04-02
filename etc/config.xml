@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/config.xsd">
+    <default>
+        <zoorate_poinzilla>
+            <sdk>
+                <file_url>https://sdk.poinzilla.com/sdk.umd.js</file_url>
+                <iframe_url>https://widget.poinzilla.com</iframe_url>
+                <api_url>https://api.poinzilla.com</api_url>
+            </sdk>
+        </zoorate_poinzilla>
+    </default>
+</config>

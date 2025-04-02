@@ -3,12 +3,15 @@
 ?>
 
 <?php
-if (!$block->getHelper()->getModuleEnable()) {
+
+$storeId = $block->getCurrentStoreId();
+
+if (!$block->getHelper()->getModuleEnable($storeId)) {
     return false;
 }
 
 // if setting mode is true and user is not logged in or user is logged in but not a customer, return false
-if ($block->getHelper()->getSettingMode()) {
+if ($block->getHelper()->getSettingMode($storeId)) {
 
     //if user is not logged in return false
     if (!$block->isCustomerLoggedIn()) {
@@ -17,8 +20,8 @@ if ($block->getHelper()->getSettingMode()) {
         //get customer email
         $poinzilla_user_data = $block->getCurrentCustomer();
         //get setting mode customers email array
+        
         $setting_mode_customers = explode(',', $block->getHelper()->getsSettingModeCustomers() ?? '');
-
         //if customer email is not in setting mode customers return false
         if (!in_array($poinzilla_user_data->getEmail(), $setting_mode_customers)) {
             return false;
@@ -46,22 +49,27 @@ if ($block->getHelper()->getSettingMode()) {
 </script>
 
 <div class="poinzilla-login-user-info"
-     data-merchant-code="<?= $block->getHelper()->getMerchantCode() ?>"
-     data-api-key="<?= $block->getHelper()->getPublicKey() ?>"
+     data-merchant-code="<?= $block->getHelper()->getMerchantCode($storeId) ?>"
+     data-api-key="<?= $block->getHelper()->getPublicKey($storeId) ?>"
      data-iframe-site-url="<?= $block->getOption('poinzilla_iframe_site_url') ?>"
      data-api-url="<?= $block->getOption('poinzilla_api_url') ?>"
     <?php if ($block->isCustomerLoggedIn()) { ?>
-        <?php $poinzilla_user_data = $block->getCurrentCustomer(); ?>
-        <?php $digest = $block->generateDigest($poinzilla_user_data->getEmail()); ?>
+        <?php
+        $poinzilla_user_data = $block->getCurrentCustomer();
+        $digest = $block->generateDigest($poinzilla_user_data->getEmail(), $storeId);
+        $group = json_encode([$poinzilla_user_data->getGroupId()]);
+        ?>
         data-first-name="<?= $block->getCustomerFirstName() ?>"
         data-last-name="<?= $block->getCustomerLastName() ?>"
         data-email="<?= $poinzilla_user_data->getEmail(); ?>"
         data-digest="<?= $digest ?>"
+        data-consumer-group='<?= $group ?>'
     <?php } else { ?>
         data-first-name=""
         data-last-name=""
         data-email=""
         data-digest=""
+        data-consumer-group="[]"
     <?php } ?>
     <?php if ($block->getReferralCode()) { ?>
         data-referral-code="<?= $block->getReferralCode() ?>"
@@ -70,3 +78,4 @@ if ($block->getHelper()->getSettingMode()) {
         data-default-view="<?= $block->getDefaultView() ?>"
     <?php } ?>>
 </div>
+

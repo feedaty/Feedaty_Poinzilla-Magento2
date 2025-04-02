@@ -2,62 +2,143 @@
 
 namespace Zoorate\PoinZilla\Model\Api\PoinZilla;
 
+use Magento\Catalog\Model\CategoryRepository;
+use Magento\Catalog\Model\ProductRepository;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\HTTP\Client\Curl;
 use Magento\SalesRule\Api\CouponRepositoryInterface;
+use Magento\SalesRule\Model\ResourceModel\Coupon\CollectionFactory;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
+use Zoorate\PoinZilla\Helper\Data;
 use Zoorate\PoinZilla\Model\Api\PoinZilla;
+
 
 class External extends PoinZilla
 {
+    /**
+     * @var CouponRepositoryInterface
+     */
     protected CouponRepositoryInterface $couponRepository;
-    private $couponCollectionFactory;
-    private $categoryRepository;
 
+    /**
+     * @var StoreManagerInterface
+     */
+    protected StoreManagerInterface $storeManager;
+
+    /**
+     * @var ScopeConfigInterface
+     */
+    protected ScopeConfigInterface $scopeConfig;
+
+    /**
+     * @var CollectionFactory
+     */
+    private CollectionFactory $couponCollectionFactory;
+
+    /**
+     * @var CategoryRepository
+     */
+    private CategoryRepository $categoryRepository;
+
+    /**
+     * @param Data $helper
+     * @param Curl $client
+     * @param LoggerInterface $logger
+     * @param ProductRepository $productRepository
+     * @param CouponRepositoryInterface $couponRepository
+     * @param CollectionFactory $couponCollectionFactory
+     * @param CategoryRepository $categoryRepository
+     * @param StoreManagerInterface $storeManager
+     * @param ScopeConfigInterface $scopeConfig
+     */
     public function __construct(
-        \Zoorate\PoinZilla\Helper\Data $helper,
-        \Magento\Framework\HTTP\Client\Curl $client,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Catalog\Model\ProductRepository $productRepository,
+        Data                      $helper,
+        Curl                      $client,
+        LoggerInterface             $logger,
+        ProductRepository         $productRepository,
         CouponRepositoryInterface $couponRepository,
-        \Magento\SalesRule\Model\ResourceModel\Coupon\CollectionFactory $couponCollectionFactory,
-        \Magento\Catalog\Model\CategoryRepository $categoryRepository
-    ) {
+        CollectionFactory         $couponCollectionFactory,
+        CategoryRepository        $categoryRepository,
+        StoreManagerInterface     $storeManager,
+        ScopeConfigInterface      $scopeConfig
+    )
+    {
         $this->couponRepository = $couponRepository;
         $this->couponCollectionFactory = $couponCollectionFactory;
         $this->categoryRepository = $categoryRepository;
-        parent::__construct($helper, $client, $logger, $productRepository);
+        $this->storeManager = $storeManager;
+        $this->scopeConfig = $scopeConfig;
+        parent::__construct($helper, $client, $logger,  $productRepository);
     }
 
 
-    public function createConsumer($customer)
+    /**
+     * @param $customer
+     * @return bool
+     */
+    public function createConsumer($customer): bool
     {
+        // Ottieni l'ID del negozio associato al cliente
+        $storeId = $customer->getStoreId();
+
+        // Ottieni la lingua del negozio
+        $localeCode = $this->scopeConfig->getValue(
+            'general/locale/code',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        // Mappatura per ottenere solo valori accettati
+        $acceptedCultures = ['it', 'en', 'es', 'fr', 'de'];
+
+        // Estrai la parte della lingua prima del "_"
+        $culture = substr($localeCode, 0, 2);
+
+        // Verifica che sia un valore accettato, altrimenti imposta un default
+        if (!in_array($culture, $acceptedCultures)) {
+            $culture = 'en'; // Default a "en" se il valore non è tra quelli validi
+        }
+
         $postData = json_encode([
-            "email"        => $customer->getEmail(),
-            "firstName"    => $customer->getFirstName(),
-            "lastName"     => $customer->getLastName(),
-            "merchantCode" => $this->helper->getMerchantCode(),
-            "externalId"   => $customer->getId(),
-            "birthDate"    => null
+            "email" => $customer->getEmail(),
+            "firstName" => $customer->getFirstName(),
+            "lastName" => $customer->getLastName(),
+            "merchantCode" => $this->helper->getMerchantCode($storeId),
+            "externalId" => $customer->getId(),
+            "birthDate" => null,
+            "cultureId" => $culture, // Lingua validata
+            "group" => [$customer->getGroupId()]
         ]);
 
-        return $this->postRequest('externalConsumer', $postData);
+        return $this->postRequest('externalConsumer', $postData, $storeId);
+    }
+
+
+    /**
+     * @param $order
+     * @return bool
+     */
+    public function createOrder($order, $storeId = null): bool
+    {
+        $postData = json_encode([
+            "id" => $order->getId(),
+            "status" => $order->getStatus(),
+            "customer_id" => $order->getCustomerId(),
+            "line_items" => $this->getOrderItems($order),
+            "coupon_lines" => $this->getCouponLines($order)
+        ]);
+        return $this->postRequest('externalOrder', $postData, $storeId);
     }
 
     /**
      * @param $order
-     * @return mixed
+     * @return array
+     * @throws NoSuchEntityException
      */
-    public function createOrder($order)
-    {
-        $postData = json_encode([
-            "id"          => $order->getId(),
-            "status"      => $order->getStatus(),
-            "customer_id" => $order->getCustomerId(),
-            "line_items"  => $this->getOrderItems($order),
-            "coupon_lines" => $this->getCouponLines($order)
-        ]);
-        return $this->postRequest('externalOrder', $postData);
-    }
-
-    private function getOrderItems($order)
+    private function getOrderItems($order): array
     {
         $items = $order->getAllVisibleItems();
         $products = [];
@@ -70,10 +151,10 @@ class External extends PoinZilla
             // Recupera l'alberatura completa delle categorie, incluse le categorie padre
             $allCategoryIds = $this->getAllCategoryTree($categoryIds);
 
-            if($item->getRowTotalInclTax()) {
+            if ($item->getRowTotalInclTax()) {
                 $products[] = [
                     'id' => $item->getProductId(),
-                    'product_id' => $item->getProductId(),
+                    'product_id' => $product->getSku(),
                     'productCat' => $allCategoryIds,
                     'name' => $item->getName(),
                     'total' => $item->getRowTotalInclTax()
@@ -85,7 +166,11 @@ class External extends PoinZilla
         return $products;
     }
 
-    private function getAllCategoryTree($categoryIds)
+    /**
+     * @param $categoryIds
+     * @return array
+     */
+    private function getAllCategoryTree($categoryIds): array
     {
         $allCategoryIds = [];
 
@@ -105,13 +190,16 @@ class External extends PoinZilla
             return $categoryId != 1 && $categoryId != 2;
         });
 
-        // Riorganizza l'array per rimuovere le chiavi numeriche
+        // Riorganizza array per rimuovere le chiavi numeriche
         return array_values($filteredCategoryIds);
     }
 
 
-
-    private function getCategoryPath($categoryId)
+    /**
+     * @param $categoryId
+     * @return array
+     */
+    private function getCategoryPath($categoryId): array
     {
         $categoryPath = [];
 
@@ -121,14 +209,14 @@ class External extends PoinZilla
 
             $this->logger->info("Category with ID $categoryId found: " . $category->getName());
 
-            // Ottieni il percorso completo della categoria (array di ID)
+            // Ottieni il percorso completo della categoria (array ID)
             $pathIds = $category->getPathIds();
 
             // Aggiungi ogni ID di categoria al percorso
             foreach ($pathIds as $id) {
                 $categoryPath[] = $id;
             }
-        } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+        } catch (NoSuchEntityException $e) {
             // Gestione dell'errore se la categoria non viene trovata
             $this->logger->error("Category with ID $categoryId not found: " . $e->getMessage());
         }
@@ -136,8 +224,11 @@ class External extends PoinZilla
         return $categoryPath;
     }
 
-
-    private function getCouponLines($order)
+    /**
+     * @param $order
+     * @return array
+     */
+    private function getCouponLines($order): array
     {
         $couponLines = [];
 
@@ -146,8 +237,8 @@ class External extends PoinZilla
         // Se esiste un coupon applicato
         if ($couponCode) {
             $couponLines[] = [
-                'id'       => $this->getCouponIdByCode($couponCode), // Metodo per recuperare l'ID del coupon
-                'code'     => $couponCode,
+                'id' => $this->getCouponIdByCode($couponCode), // Metodo per recuperare l'ID del coupon
+                'code' => $couponCode,
                 'discount' => $this->getCouponDiscountAmount($order) // Metodo per recuperare lo sconto del coupon
             ];
         }
@@ -155,14 +246,11 @@ class External extends PoinZilla
         return $couponLines;
     }
 
-
-    private function getCouponDiscountAmount($order): float|int
-    {
-        // Restituisce l'importo totale dello sconto del coupon
-        return abs($order->getDiscountAmount());
-    }
-
-    private function getCouponIdByCode($couponCode)
+    /**
+     * @param $couponCode
+     * @return int|null
+     */
+    private function getCouponIdByCode($couponCode): ?int
     {
         $couponCollection = $this->couponCollectionFactory->create()
             ->addFieldToFilter('code', $couponCode)
@@ -177,5 +265,14 @@ class External extends PoinZilla
         return null;
     }
 
+    /**
+     * @param $order
+     * @return float|int
+     */
+    private function getCouponDiscountAmount($order): float|int
+    {
+        // Restituisce l'importo totale dello sconto del coupon
+        return abs($order->getDiscountAmount());
+    }
 
 }

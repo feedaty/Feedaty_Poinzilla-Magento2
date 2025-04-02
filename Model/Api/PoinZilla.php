@@ -5,30 +5,37 @@ namespace Zoorate\PoinZilla\Model\Api;
 use Zoorate\PoinZilla\Helper\Data;
 use Magento\Framework\HTTP\Client\Curl as Client;
 use Psr\Log\LoggerInterface;
-use \Magento\Catalog\Model\ProductRepository;
+use Magento\Catalog\Model\ProductRepository;
 
 class PoinZilla
 {
     /**
      * @var Data
      */
-    protected $helper;
+    protected Data $helper;
 
     /**
      * @var Client
      */
-    protected $client;
+    protected Client $client;
 
     /**
      * @var LoggerInterface
      */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     /**
      * @var ProductRepository
      */
-    protected $productRepository;
+    protected ProductRepository $productRepository;
 
+    /**
+     * PoinZilla constructor.
+     * @param Data $helper
+     * @param Client $client
+     * @param LoggerInterface $logger
+     * @param ProductRepository $productRepository
+     */
     public function __construct(
         Data $helper,
         Client $client,
@@ -42,74 +49,97 @@ class PoinZilla
         $this->productRepository = $productRepository;
     }
 
-    private function getClient()
+    /**
+     * @return Client
+     */
+    private function getClient(): Client
     {
         return $this->client;
     }
 
-    protected function getEndpoint()
+    /**
+     * @return string
+     */
+    protected function getEndpoint(): string
     {
-        return 'https://api.poinzilla.com/';
+        return $this->helper->getApiUrl();
     }
 
+    /**
+     * @return string
+     */
     protected function getExternalConsumerEndpoint(): string
     {
         return $this->getEndpoint() . 'api/External/Consumer';
     }
 
+    /**
+     * @return string
+     */
     protected function getExternalOrderEndpoint(): string
     {
         return $this->getEndpoint() . 'api/External/Order';
     }
 
-    public function postRequest($cmd, $data): bool
+    /**
+     * @param $cmd
+     * @param $data
+     * @return bool
+     */
+    public function postRequest($cmd, $data, $storeId): bool
     {
         $client = $this->getClient();
 
+        if (in_array($cmd, ["externalConsumer", "externalOrder"])) {
+            $requestUrl = ($cmd == "externalConsumer") ? $this->getExternalConsumerEndpoint() : $this->getExternalOrderEndpoint();
 
-        if ($cmd == "externalConsumer") {
-            $requestUrl = $this->getExternalConsumerEndpoint();
             $client->addHeader('Content-Type', 'application/json');
-            $client->addHeader('X-loyalty-channel-key', $this->helper->getPublicKey());
-            $client->post($requestUrl, $data);
-        }
-        elseif ($cmd == "externalOrder") {
-            $requestUrl = $this->getExternalOrderEndpoint();
-            $this->logger->info('Zoorate PoinZilla : Send Order to PoinZilla' . $requestUrl);
-            $client->addHeader('Content-Type', 'application/json');
-            $client->addHeader('X-loyalty-channel-key', $this->helper->getPublicKey());
+
+            // ✅ Recupera la chiave privata per la specifica store view
+            $privateKey = $this->helper->getPrivateKey($storeId);
+
+            // ✅ Debug per verificare la store view
+            $this->logger->info("Culture for customer - Store ID: " . $storeId . " - Private Key: " . $privateKey);
+
+            $client->addHeader('X-loyalty-channel-key', $privateKey);
+
+            if ($cmd == "externalOrder") {
+                $this->logger->info('Zoorate PoinZilla : Send Order to PoinZilla ' . $requestUrl);
+            }
+
             try {
                 $client->post($requestUrl, $data);
             } catch (\Exception $e) {
                 $this->logger->error('Zoorate PoinZilla : Error encountered during send order. ' . $e->getMessage());
             }
-        }
 
-        $body = $client->getBody();
-        $statusCode = $client->getStatus();
-        if($statusCode == 200) {
-            $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Pass');
-            return true;
-        } else {
-            $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Fail');
+            $body = $client->getBody();
+            $statusCode = $client->getStatus();
+            if ($statusCode == 200) {
+                $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Pass', $storeId);
+                return true;
+            } else {
+                $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Fail', $storeId);
+            }
         }
 
         return false;
     }
 
-    public function getModuleEnable()
+
+    public function getModuleEnable($storeId = null)
     {
-        return $this->helper->getModuleEnable();
+        return $this->helper->getModuleEnable($storeId);
     }
 
-    public function getSettingMode()
+    public function getSettingMode($storeId = null)
     {
-        return $this->helper->getSettingMode();
+        return $this->helper->getSettingMode($storeId);
     }
 
-    public function getSettingModeCustomers()
+    public function getSettingModeCustomers($storeId = null)
     {
-        return $this->helper->getsSettingModeCustomers();
+        return $this->helper->getsSettingModeCustomers($storeId);
     }
 
 }
