@@ -2,7 +2,7 @@
     "name": "zoorate/poinzilla",
     "description": "PoinZilla Module for Magento 2",
     "type": "magento2-module",
-    "version": "1.0.4-stable",
+    "version": "1.0.5-stable",
     "license": [
         "AFL-3.0"
     ],
