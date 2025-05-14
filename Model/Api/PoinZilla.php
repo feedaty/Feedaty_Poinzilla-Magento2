@@ -70,7 +70,7 @@ class PoinZilla
      */
     protected function getExternalConsumerEndpoint(): string
     {
-        return $this->getEndpoint() . 'api/External/Consumer';
+        return $this->getEndpoint() . '/api/External/Consumer';
     }
 
     /**
@@ -78,7 +78,7 @@ class PoinZilla
      */
     protected function getExternalOrderEndpoint(): string
     {
-        return $this->getEndpoint() . 'api/External/Order';
+        return $this->getEndpoint() . '/api/External/Order';
     }
 
     /**
