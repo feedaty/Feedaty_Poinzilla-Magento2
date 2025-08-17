@@ -126,6 +126,46 @@ class PoinZilla
         return false;
     }
 
+    public function retryOrderRequest($log)
+    {
+        $client = $this->getClient();
+
+        $storeId = (int)$log->getStoreId();
+        $data = $log->getCallBody();
+        $id = $log->getId();
+
+        $requestUrl = $this->getExternalOrderEndpoint();
+
+        $client->addHeader('Content-Type', 'application/json');
+
+        $privateKey = $this->helper->getPrivateKey($storeId);
+        $client->addHeader('X-loyalty-channel-key', $privateKey);
+
+        $this->logger->info("[PoinZilla Retry] Retrying order for log ID $id on store $storeId");
+
+        try {
+            $client->post($requestUrl, $data);
+        } catch (\Exception $e) {
+            $this->logger->error("[PoinZilla Retry] Exception for log ID $id: " . $e->getMessage());
+            return false;
+        }
+
+        $statusCode = $client->getStatus();
+        $status = $statusCode === 200 ? 'Pass' : 'Fail';
+
+        try {
+            $this->helper->updateApiLogRetry($log, $status);
+        } catch (\Exception $e) {
+            $this->logger->error("[PoinZilla Retry] Failed to update log ID $id: " . $e->getMessage());
+            return false;
+        }
+
+        return $status === 'Pass';
+    }
+
+
+
+
 
     public function getModuleEnable($storeId = null)
     {
