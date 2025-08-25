@@ -127,6 +127,7 @@ class External extends PoinZilla
             "id" => $order->getId(),
             "status" => $order->getStatus(),
             "customer_id" => $order->getCustomerId(),
+            "customer_email" => $order->getCustomerEmail(),
             "line_items" => $this->getOrderItems($order),
             "coupon_lines" => $this->getCouponLines($order)
         ]);
