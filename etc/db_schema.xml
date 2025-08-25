@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+
     <table name="zoorate_api_log" resource="default" engine="innodb" comment="">
         <column xsi:type="int" name="id" padding="11" unsigned="false" nullable="false" identity="true" comment=""/>
         <column xsi:type="int" name="store_id" unsigned="false" nullable="false" comment=""/>
@@ -8,10 +10,13 @@
         <column xsi:type="text" name="call_body" comment=""/>
         <column xsi:type="text" name="call_response" comment=""/>
         <column xsi:type="varchar" name="call_result" length="10" comment=""/>
+        <column xsi:type="int" name="retry" unsigned="false" nullable="false" default="0" comment="Retry counter"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Last Updated"/>
 
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>
     </table>
 </schema>
+

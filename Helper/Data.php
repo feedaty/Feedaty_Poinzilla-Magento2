@@ -26,7 +26,7 @@ class Data extends AbstractHelper
     /**
      * @var ZoorateApiLogRepository
      */
-    protected $zoorateApiLogRepository;
+    public $zoorateApiLogRepository;
 
     public function __construct(
         Context $context,
@@ -112,5 +112,13 @@ class Data extends AbstractHelper
         $apiLogData->setStoreId($storeId);
 
         $this->zoorateApiLogRepository->save($apiLogData);
+    }
+
+    public function updateApiLogRetry($log, $result)
+    {
+        $log->setRetry((int) $log->getRetry() + 1);
+        $log->setCallResult($result);
+        $log->setUpdatedAt(date('Y-m-d H:i:s'));
+        $this->zoorateApiLogRepository->save($log);
     }
 }
