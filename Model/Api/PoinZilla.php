@@ -119,6 +119,8 @@ class PoinZilla
                 $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Pass', $storeId);
                 return true;
             } else {
+                //log response error
+                $this->logger->error('Zoorate PoinZilla : Error encountered during send order. Status Code: ' . $statusCode . ' - Response: ' . $body);
                 $this->helper->apiLog($cmd, $requestUrl, $data, $body, 'Fail', $storeId);
             }
         }
@@ -131,7 +133,8 @@ class PoinZilla
         $client = $this->getClient();
 
         $storeId = (int)$log->getStoreId();
-        $data = $log->getCallBody();
+        $data = json_decode($log->getCallBody(), true);
+
         $id = $log->getId();
 
         $requestUrl = $this->getExternalOrderEndpoint();
@@ -141,17 +144,17 @@ class PoinZilla
         $privateKey = $this->helper->getPrivateKey($storeId);
         $client->addHeader('X-loyalty-channel-key', $privateKey);
 
-        $this->logger->info("[PoinZilla Retry] Retrying order for log ID $id on store $storeId");
-
         try {
             $client->post($requestUrl, $data);
         } catch (\Exception $e) {
-            $this->logger->error("[PoinZilla Retry] Exception for log ID $id: " . $e->getMessage());
+            $body = $client->getBody();
+            $this->logger->error("[PoinZilla Retry] Error encountered during retry for log ID $id: " . $e->getMessage() . " - Response: " . $body . "requestUrl: " . $requestUrl . " - Data: " . $data);
+
             return false;
         }
 
         $statusCode = $client->getStatus();
-        $status = $statusCode === 200 ? 'Pass' : 'Fail';
+        $status = $statusCode == 200 ? 'Pass' : 'Fail';
 
         try {
             $this->helper->updateApiLogRetry($log, $status);
@@ -160,11 +163,8 @@ class PoinZilla
             return false;
         }
 
-        return $status === 'Pass';
+        return $status;
     }
-
-
-
 
 
     public function getModuleEnable($storeId = null)
