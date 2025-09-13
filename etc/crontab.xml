@@ -2,8 +2,8 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
-        <job name="zoorate_orders_retry" instance="Zoorate\Poinzilla\Cron\OrdersRetry" method="execute">
-            <schedule>0 * * * *</schedule>
+        <job name="zoorate_retry" instance="Zoorate\PoinZilla\Cron\Retry" method="execute">
+            <schedule>* * * * *</schedule>
         </job>
     </group>
 </config>

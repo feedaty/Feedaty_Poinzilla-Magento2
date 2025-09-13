@@ -163,11 +163,53 @@ class PoinZilla
             return false;
         }
 
-        return $status;
+        return $statusCode == 200; // boolean
     }
 
 
-    public function getModuleEnable($storeId = null)
+
+    public function retryConsumerRequest($log)
+    {
+        $client = $this->getClient();
+
+        $storeId = (int)$log->getStoreId();
+        $data = json_decode($log->getCallBody(), true);
+
+        $id = $log->getId();
+
+        $requestUrl = $this->getExternalConsumerEndpoint();
+
+        $client->addHeader('Content-Type', 'application/json');
+
+        $privateKey = $this->helper->getPrivateKey($storeId);
+        $client->addHeader('X-loyalty-channel-key', $privateKey);
+
+        try {
+            $client->post($requestUrl, $data);
+        } catch (\Throwable $e) {
+            $this->logger->error("[PoinZilla Retry] Consumer call failed for log ID $id: " . $e->getMessage());
+            try {
+                $this->helper->updateApiLogRetry($log, 'Fail');
+            } catch (\Exception $e2) {
+                $this->logger->error("[PoinZilla Retry] Failed to update log ID $id: " . $e2->getMessage());
+            }
+            return false;
+        }
+
+        $statusCode = $client->getStatus();
+        $status = $statusCode == 200 ? 'Pass' : 'Fail';
+
+        try {
+            $this->helper->updateApiLogRetry($log, $status);
+        } catch (\Exception $e) {
+            $this->logger->error("[PoinZilla Retry] Failed to update log ID $id: " . $e->getMessage());
+            return false;
+        }
+
+        return $status;
+    }
+
+public function getModuleEnable($storeId = null)
     {
         return $this->helper->getModuleEnable($storeId);
     }
