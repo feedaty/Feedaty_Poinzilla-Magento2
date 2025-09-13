@@ -237,8 +237,9 @@ class External extends PoinZilla
         $couponCode = $order->getCouponCode();
         // Se esiste un coupon applicato
         if ($couponCode) {
+            $couponId = $this->getCouponIdByCode($couponCode);
             $couponLines[] = [
-                'id' => $this->getCouponIdByCode($couponCode), // Metodo per recuperare l'ID del coupon
+                'id' => $couponId !== null ? (string)$couponId : '', // Metodo per recuperare l'ID del coupon
                 'code' => $couponCode,
                 'discount' => $this->getCouponDiscountAmount($order) // Metodo per recuperare lo sconto del coupon
             ];
