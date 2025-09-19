@@ -128,88 +128,44 @@ class PoinZilla
         return false;
     }
 
-    public function retryOrderRequest($log)
-    {
-        $client = $this->getClient();
-
-        $storeId = (int)$log->getStoreId();
-        $data = json_decode($log->getCallBody(), true);
-
-        $id = $log->getId();
-
-        $requestUrl = $this->getExternalOrderEndpoint();
-
-        $client->addHeader('Content-Type', 'application/json');
-
-        $privateKey = $this->helper->getPrivateKey($storeId);
-        $client->addHeader('X-loyalty-channel-key', $privateKey);
-
-        try {
-            $client->post($requestUrl, $data);
-        } catch (\Exception $e) {
-            $body = $client->getBody();
-            $this->logger->error("[PoinZilla Retry] Error encountered during retry for log ID $id: " . $e->getMessage() . " - Response: " . $body . "requestUrl: " . $requestUrl . " - Data: " . $data);
-
-            return false;
+    private function normalizeJsonString(string $raw): string {
+        $t = trim($raw);
+        if (strlen($t)>1 && $t[0]==='"' && substr($t,-1)==='"') {
+            $dec = json_decode($t, true);
+            if (is_string($dec) && ($dec[0]==='{' || $dec[0]==='[')) return $dec;
         }
-
-        $statusCode = $client->getStatus();
-        $status = $statusCode == 200 ? 'Pass' : 'Fail';
-
-        try {
-            $this->helper->updateApiLogRetry($log, $status);
-        } catch (\Exception $e) {
-            $this->logger->error("[PoinZilla Retry] Failed to update log ID $id: " . $e->getMessage());
-            return false;
-        }
-
-        return $statusCode == 200; // boolean
+        return $raw;
     }
 
-
-
-    public function retryConsumerRequest($log)
-    {
-        $client = $this->getClient();
-
+    public function retryConsumerRequest($log): bool {
+        $client  = $this->getClient();
         $storeId = (int)$log->getStoreId();
-        $data = json_decode($log->getCallBody(), true);
-
-        $id = $log->getId();
-
-        $requestUrl = $this->getExternalConsumerEndpoint();
-
-        $client->addHeader('Content-Type', 'application/json');
-
-        $privateKey = $this->helper->getPrivateKey($storeId);
-        $client->addHeader('X-loyalty-channel-key', $privateKey);
-
-        try {
-            $client->post($requestUrl, $data);
-        } catch (\Throwable $e) {
-            $this->logger->error("[PoinZilla Retry] Consumer call failed for log ID $id: " . $e->getMessage());
-            try {
-                $this->helper->updateApiLogRetry($log, 'Fail');
-            } catch (\Exception $e2) {
-                $this->logger->error("[PoinZilla Retry] Failed to update log ID $id: " . $e2->getMessage());
-            }
-            return false;
-        }
-
-        $statusCode = $client->getStatus();
-        $status = $statusCode == 200 ? 'Pass' : 'Fail';
-
-        try {
-            $this->helper->updateApiLogRetry($log, $status);
-        } catch (\Exception $e) {
-            $this->logger->error("[PoinZilla Retry] Failed to update log ID $id: " . $e->getMessage());
-            return false;
-        }
-
-        return $status;
+        $id      = $log->getId();
+        $client->addHeader('Content-Type','application/json');
+        $client->addHeader('X-loyalty-channel-key',$this->helper->getPrivateKey($storeId));
+        $payload = $this->normalizeJsonString((string)$log->getCallBody());
+        try { $client->post($this->getExternalConsumerEndpoint(), $payload); }
+        catch (\Throwable $e) { $this->logger->error("[Retry][Consumer] $id: ".$e->getMessage()); try{$this->helper->updateApiLogRetry($log,'Fail');}catch(\Exception $e2){} return false; }
+        $ok = ((int)$client->getStatus() >= 200 && (int)$client->getStatus() < 300);
+        try { $this->helper->updateApiLogRetry($log, $ok?'Pass':'Fail'); } catch (\Exception $e) {}
+        return $ok;
     }
 
-public function getModuleEnable($storeId = null)
+    public function retryOrderRequest($log): bool {
+        $client  = $this->getClient();
+        $storeId = (int)$log->getStoreId();
+        $id      = $log->getId();
+        $client->addHeader('Content-Type','application/json');
+        $client->addHeader('X-loyalty-channel-key',$this->helper->getPrivateKey($storeId));
+        $payload = $this->normalizeJsonString((string)$log->getCallBody());
+        try { $client->post($this->getExternalOrderEndpoint(), $payload); }
+        catch (\Throwable $e) { $this->logger->error("[Retry][Order] $id: ".$e->getMessage()); try{$this->helper->updateApiLogRetry($log,'Fail');}catch(\Exception $e2){} return false; }
+        $ok = ((int)$client->getStatus() >= 200 && (int)$client->getStatus() < 300);
+        try { $this->helper->updateApiLogRetry($log, $ok?'Pass':'Fail'); } catch (\Exception $e) {}
+        return $ok;
+    }
+
+    public function getModuleEnable($storeId = null)
     {
         return $this->helper->getModuleEnable($storeId);
     }
