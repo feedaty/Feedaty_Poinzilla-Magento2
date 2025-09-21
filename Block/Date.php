@@ -2,11 +2,15 @@
 
 namespace Zoorate\PoinZilla\Block;
 
-class Date extends \Magento\Config\Block\System\Config\Form\Field
+use Magento\Config\Block\System\Config\Form\Field;
+use Magento\Framework\Data\Form\Element\AbstractElement;
+use Magento\Framework\Stdlib\DateTime;
+
+class Date extends Field
 {
-    public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element): string
+    public function render(AbstractElement $element): string
     {
-        $element->setDateFormat(\Magento\Framework\Stdlib\DateTime::DATE_INTERNAL_FORMAT);
+        $element->setDateFormat(DateTime::DATE_INTERNAL_FORMAT);
         $element->setTimeFormat(null);
         return parent::render($element);
     }

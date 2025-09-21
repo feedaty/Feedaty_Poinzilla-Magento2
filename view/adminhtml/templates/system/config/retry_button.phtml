@@ -1,97 +1,36 @@
 <?php /** @var $block \Zoorate\PoinZilla\Block\Adminhtml\System\Config\RetryButton */ ?>
-<div>
-    <button id="pz-retry-run" class="action-default scalable save primary">
-        <span><?= $escaper->escapeHtml(__('Forza retry')) ?></span>
-    </button>
-</div>
+<?= /* bottone come nel tuo ExportButton */ $block->getButtonHtml(); ?>
 
 <script>
-    require(['jquery', 'mage/translate'], function ($) {
+    require(['jquery','mage/translate'], function ($) {
         'use strict';
+        var __ = $.mage.__;
 
-        var __ = $.mage.__; // traduzioni
+        window.pzRetryRun = function () {
+            // leggi le date dai campi config
+            var from = ($('input[name="groups[retry][fields][retry_from][value]"]').val() || '').trim();
+            var to   = ($('input[name="groups[retry][fields][retry_to][value]"]').val()   || '').trim();
 
-        function getQuery(name) {
-            var params = new URLSearchParams(window.location.search);
-            return params.get(name) || '';
-        }
-
-        function getDates() {
-            var from = $('input[name="groups[tools][fields][retry_from][value]"]').val();
-            var to   = $('input[name="groups[tools][fields][retry_to][value]"]').val();
-            return { from: (from || '').trim(), to: (to || '').trim() };
-        }
-
-        function isValidYmd(str) {
-            // Valida YYYY-MM-DD e verifica data reale (mese/giorno)
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) return false;
-            var d = new Date(str + 'T00:00:00Z'); // parse in UTC
-            if (isNaN(d.getTime())) return false;
-            var parts = str.split('-');
-            return (d.getUTCFullYear() === +parts[0] &&
-                (d.getUTCMonth() + 1) === +parts[1] &&
-                d.getUTCDate() === +parts[2]);
-        }
-
-        function compareYmd(a, b) {
-            // Confronto lessicografico sicuro per formato YYYY-MM-DD
-            return a < b ? -1 : (a > b ? 1 : 0);
-        }
-
-        $('#pz-retry-run').on('click', function (e) {
-            e.preventDefault();
-
-            var $btn = $(this);
-            var btnHtml = $btn.html();
-
-            var scopeWebsite = getQuery('website'); // es. 'base' oppure ''
-            var scopeStore   = getQuery('store');   // es. 'default' oppure ''
-
-            var dates = getDates();
-            var from = dates.from, to = dates.to;
-
-            if (!from || !to) {
-                alert(__('Seleziona entrambe le date.'));
-                return;
+            // validazioni leggere (quelle serie restano nel controller)
+            if (!from || !to) { alert(__('Select both dates.')); return; }
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) {
+                alert(__('Invalid date format. Use YYYY-MM-DD.')); return;
             }
-            if (!isValidYmd(from) || !isValidYmd(to)) {
-                alert(__('Formato data non valido. Usa YYYY-MM-DD.'));
-                return;
-            }
-            if (compareYmd(from, to) > 0) {
-                alert(__('La data iniziale non può essere successiva alla finale.'));
-                return;
-            }
+            if (from > to) { alert(__('Start date cannot be after end date.')); return; }
 
-            // Evita doppi click
-            $btn.prop('disabled', true).html(__('Elaborazione...'));
+            // base URL già con secret key e scope (website/store)
+            var baseUrl = '<?= $escaper->escapeUrl($block->getBaseUrl()) ?>';
 
-            $.ajax({
-                url: '<?= $escaper->escapeUrl($block->getPostUrl()) ?>',
-                method: 'POST',
-                dataType: 'json',
-                showLoader: true,
-                data: {
-                    form_key: window.FORM_KEY,
-                    from: from,
-                    to: to,
-                    website: scopeWebsite,
-                    store: scopeStore
-                }
-            }).done(function (resp) {
-                var msg = (resp && resp.message) ? resp.message : __('Operazione completata.');
-                alert(msg);
-                // ricarico per mostrare eventuali notice/log nella pagina
-                location.reload();
-            }).fail(function (xhr) {
-                var msg = __('Errore durante l\'operazione.');
-                if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
-                    msg = xhr.responseJSON.message;
-                }
-                alert(msg);
-            }).always(function () {
-                $btn.prop('disabled', false).html(btnHtml);
-            });
-        });
+            // opzionale: includi form_key in query anche se usi GET (puoi validarla lato controller)
+            var q = 'from=' + encodeURIComponent(from) +
+                '&to=' + encodeURIComponent(to) +
+                '&form_key=' + encodeURIComponent(window.FORM_KEY);
+
+            // se baseUrl ha già "?", concatena con "&"
+            var url = baseUrl + (baseUrl.indexOf('?') === -1 ? '?' : '&') + q;
+
+            // redirect GET
+            setLocation(url);
+        };
     });
 </script>
