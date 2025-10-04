@@ -1,0 +1,36 @@
+<?php /** @var $block \Zoorate\PoinZilla\Block\Adminhtml\System\Config\RetryButton */ ?>
+<?= /* bottone come nel tuo ExportButton */ $block->getButtonHtml(); ?>
+
+<script>
+    require(['jquery','mage/translate'], function ($) {
+        'use strict';
+        var __ = $.mage.__;
+
+        window.pzRetryRun = function () {
+            // leggi le date dai campi config
+            var from = ($('input[name="groups[retry][fields][retry_from][value]"]').val() || '').trim();
+            var to   = ($('input[name="groups[retry][fields][retry_to][value]"]').val()   || '').trim();
+
+            // validazioni leggere (quelle serie restano nel controller)
+            if (!from || !to) { alert(__('Select both dates.')); return; }
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) {
+                alert(__('Invalid date format. Use YYYY-MM-DD.')); return;
+            }
+            if (from > to) { alert(__('Start date cannot be after end date.')); return; }
+
+            // base URL già con secret key e scope (website/store)
+            var baseUrl = '<?= $escaper->escapeUrl($block->getBaseUrl()) ?>';
+
+            // opzionale: includi form_key in query anche se usi GET (puoi validarla lato controller)
+            var q = 'from=' + encodeURIComponent(from) +
+                '&to=' + encodeURIComponent(to) +
+                '&form_key=' + encodeURIComponent(window.FORM_KEY);
+
+            // se baseUrl ha già "?", concatena con "&"
+            var url = baseUrl + (baseUrl.indexOf('?') === -1 ? '?' : '&') + q;
+
+            // redirect GET
+            setLocation(url);
+        };
+    });
+</script>

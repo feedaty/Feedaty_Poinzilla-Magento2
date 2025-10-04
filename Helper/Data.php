@@ -105,7 +105,7 @@ class Data extends AbstractHelper
         $apiLogData = $this->zoorateApiLogInterfaceFactory->create();
         $apiLogData->setCallName($name);
         $apiLogData->setCallEndpoint($endpoint);
-        $apiLogData->setCallBody(json_encode($body));
+        $apiLogData->setCallBody(is_string($body) ? $body : json_encode($body));
         $response = json_decode((string)$response, true);
         $apiLogData->setCallResponse(json_encode($response));
         $apiLogData->setCallResult($result);

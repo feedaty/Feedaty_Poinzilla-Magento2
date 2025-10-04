@@ -44,6 +44,27 @@
                     <frontend_model>Zoorate\PoinZilla\Block\Adminhtml\System\Config\ExportButton</frontend_model>
                 </field>
             </group>
+            <group id="retry" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Force resend of customers and orders to PoinZilla</label>
+                <field id="retry_from" translate="label comment" type="date" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>From</label>
+                    <comment>Start date (inclusive)</comment>
+                    <validate>validate-date</validate>
+                    <frontend_model>Zoorate\PoinZilla\Block\Date</frontend_model>
+                </field>
+
+                <field id="retry_to" translate="label comment" type="date" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>To</label>
+                    <comment>End date (inclusive)</comment>
+                    <validate>validate-date</validate>
+                    <frontend_model>Zoorate\PoinZilla\Block\Date</frontend_model>
+                </field>
+
+                <field id="retry_run" translate="label" type="note" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Force retry</label>
+                    <frontend_model>Zoorate\PoinZilla\Block\Adminhtml\System\Config\RetryButton</frontend_model>
+                </field>
+            </group>
         </section>
     </system>
 </config>
