@@ -131,6 +131,13 @@ class External extends PoinZilla
             "line_items" => $this->getOrderItems($order),
             "coupon_lines" => $this->getCouponLines($order)
         ]);
+
+        //if customer_id is empty, skip
+        if (empty($order->getCustomerId())) {
+            $this->logger->info("Zoorate PoinZilla : Order ID " . $order->getId() . " has no customer_id, skipping.");
+            return false;
+        }
+
         return $this->postRequest('externalOrder', $postData, $storeId);
     }
 
